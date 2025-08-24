@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snake</title>
+<style>
+    body { background-color: #333; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; font-family: monospace; }
+    canvas { background-color: black; border: 2px solid #4dff91;}
+    #info { text-align: center; position: absolute; top: 20px; }
+</style>
+</head>
+<body>
+<div id="info">
+    <h1>SNAKE</h1>
+    <h2 id="score">Score: 0</h2>
+</div>
+<canvas id="gameCanvas" width="400" height="400"></canvas>
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const gridSize = 20;
+    let snake = [{x: 10, y: 10}];
+    let food = {};
+    let direction = 'right';
+    let score = 0;
+    let gameOver = false;
+
+    function generateFood() {
+        food = {
+            x: Math.floor(Math.random() * (canvas.width / gridSize)),
+            y: Math.floor(Math.random() * (canvas.height / gridSize))
+        };
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for(let i = 0; i < snake.length; i++) {
+            ctx.fillStyle = (i === 0) ? '#4dff91' : '#33cc33';
+            ctx.fillRect(snake[i].x * gridSize, snake[i].y * gridSize, gridSize - 2, gridSize - 2);
+        }
+        ctx.fillStyle = '#ff4d4d';
+        ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+    }
+
+    function update() {
+        if (gameOver) return;
+        const head = {x: snake[0].x, y: snake[0].y};
+        if (direction === 'right') head.x++;
+        if (direction === 'left') head.x--;
+        if (direction === 'up') head.y--;
+        if (direction === 'down') head.y++;
+
+        if (head.x < 0 || head.x * gridSize >= canvas.width || head.y < 0 || head.y * gridSize >= canvas.height || checkCollision(head)) {
+            gameOver = true;
+            alert('Game Over! Final Score: ' + score + '. Refresh to play again.');
+            return;
+        }
+
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+            score++;
+            scoreElement.innerText = 'Score: ' + score;
+            generateFood();
+        } else {
+            snake.pop();
+        }
+        draw();
+    }
+
+    function checkCollision(head) {
+        for(let i = 1; i < snake.length; i++) {
+            if(head.x === snake[i].x && head.y === snake[i].y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    document.addEventListener('keydown', e => {
+        if(e.key === 'ArrowUp' && direction !== 'down') direction = 'up';
+        if(e.key === 'ArrowDown' && direction !== 'up') direction = 'down';
+        if(e.key === 'ArrowLeft' && direction !== 'right') direction = 'left';
+        if(e.key === 'ArrowRight' && direction !== 'left') direction = 'right';
+    });
+
+    generateFood();
+    setInterval(update, 100);
+</script>
+</body>
+</html>
